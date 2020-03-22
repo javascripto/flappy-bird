@@ -106,6 +106,15 @@ const flappyBird = {
 // [Screens]
 const Screens = {};
 
+let activeScreen = {
+  draw() {},
+  update() {},
+};
+
+function changeToScreen(screen) {
+  activeScreen = screen;
+}
+
 Screens.START = {
   draw() {
     background.draw();
@@ -113,7 +122,10 @@ Screens.START = {
     flappyBird.draw();
     getReaydyMessage.draw();
   },
-  update() {}
+  update() {},
+  click() {
+    changeToScreen(Screens.GAME);
+  },
 };
 
 Screens.GAME = {
@@ -127,21 +139,20 @@ Screens.GAME = {
   }
 };
 
-let activeScreen = {
-  draw() {},
-  update() {},
-};
-
-function changeToScreen(screen) {
-  activeScreen = screen;
-}
-
-changeToScreen(Screens.START);
-
 // [GameLoop]
-(function loop() {
+function loop() {
   activeScreen.draw();
   activeScreen.update();
 
   requestAnimationFrame(loop);
-})();
+}
+
+window.addEventListener('click', function() {
+  if (activeScreen.click) {
+    activeScreen.click();
+  }
+});
+
+// [Start]
+changeToScreen(Screens.START);
+loop();
