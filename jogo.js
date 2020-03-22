@@ -59,6 +59,25 @@ const floor = {
   }
 };
 
+// [Tela inicio GetReady]
+const getReaydyMessage = {
+  spriteX: 134,
+  spriteY: 0,
+  width: 174,
+  height: 152,
+  x: (canvas.width / 2) -174 / 2,
+  y: 50,
+  draw() {
+    context.drawImage(
+      sprites,
+      this.spriteX, this.spriteY,
+      this.width, this.height,
+      this.x, this.y,
+      this.width, this.height,
+    );
+  },
+};
+
 // [Pássaro]
 const flappyBird = {
   spriteX: 0,
@@ -90,6 +109,7 @@ const flappyBird = {
 
   flappyBird.update();
   flappyBird.draw();
+  getReaydyMessage.draw();
 
   requestAnimationFrame(loop);
 })();
