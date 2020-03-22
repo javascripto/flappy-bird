@@ -103,13 +103,45 @@ const flappyBird = {
   }
 };
 
-(function loop() {
-  background.draw();
-  floor.draw();
+// [Screens]
+const Screens = {};
 
-  flappyBird.update();
-  flappyBird.draw();
-  getReaydyMessage.draw();
+Screens.START = {
+  draw() {
+    background.draw();
+    floor.draw();
+    flappyBird.draw();
+    getReaydyMessage.draw();
+  },
+  update() {}
+};
+
+Screens.GAME = {
+  draw() {
+    background.draw();
+    floor.draw();
+    flappyBird.draw();
+  },
+  update() {
+    flappyBird.update();
+  }
+};
+
+let activeScreen = {
+  draw() {},
+  update() {},
+};
+
+function changeToScreen(screen) {
+  activeScreen = screen;
+}
+
+changeToScreen(Screens.START);
+
+// [GameLoop]
+(function loop() {
+  activeScreen.draw();
+  activeScreen.update();
 
   requestAnimationFrame(loop);
 })();
