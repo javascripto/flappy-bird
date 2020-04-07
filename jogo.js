@@ -2,6 +2,8 @@
 const sprites = new Image();
 sprites.src = './sprites.png';
 
+const sound_HIT = new Audio('./sounds/hit.wav');
+
 const canvas = document.querySelector('canvas');
 const context = canvas.getContext('2d');
 
@@ -79,29 +81,45 @@ const getReaydyMessage = {
 };
 
 // [Pássaro]
-const flappyBird = {
-  spriteX: 0,
-  spriteY: 0,
-  width: 33,
-  height: 24,
-  x: 10,
-  y: 50,
-  gravity: 0.25,
-  speed: 0,
-  update() {
-    this.speed += this.gravity;
-    this.y += this.speed;
-  },
-  draw() {
-    context.drawImage(
-      sprites,
-      this.spriteX, this.spriteY,
-      this.width, this.height,
-      this.x, this.y,
-      this.width, this.height,
-    );
-  }
-};
+let flappyBird = flappyBirdFactory();
+
+function flappyBirdFactory() {
+  const _flappyBird = {
+    spriteX: 0,
+    spriteY: 0,
+    width: 33,
+    height: 24,
+    x: 10,
+    y: 50,
+    gravity: 0.25,
+    speed: 0,
+    jumpSize: 4.6,
+    jump() {
+      this.y = this.y - 40;
+      this.speed = - this.jumpSize;
+    },
+    update() {
+      if (colides(this, floor)) {
+        sound_HIT.play();
+        setTimeout(() => changeToScreen(Screens.START), 500);
+        return;
+      }
+      this.speed += this.gravity;
+      this.y += this.speed;
+    },
+    draw() {
+      context.drawImage(
+        sprites,
+        this.spriteX, this.spriteY,
+        this.width, this.height,
+        this.x, this.y,
+        this.width, this.height,
+      );
+    }
+  };
+  return _flappyBird;
+}
+
 
 // [Screens]
 const Screens = {};
@@ -113,9 +131,16 @@ let activeScreen = {
 
 function changeToScreen(screen) {
   activeScreen = screen;
+
+  if (activeScreen.init) {
+    activeScreen.init();
+  }
 }
 
 Screens.START = {
+  init() {
+    flappyBird = flappyBirdFactory();
+  },
   draw() {
     background.draw();
     floor.draw();
@@ -134,10 +159,18 @@ Screens.GAME = {
     floor.draw();
     flappyBird.draw();
   },
+  click() {
+    flappyBird.jump();
+  },
   update() {
     flappyBird.update();
   }
 };
+
+function colides(bird, floor) {
+  const birdY = bird.y + bird.height;
+  return birdY >= floor.y;
+}
 
 // [GameLoop]
 function loop() {
