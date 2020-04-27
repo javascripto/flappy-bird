@@ -35,32 +35,6 @@ const background = {
   }
 };
 
-// [Chão]
-const floor = {
-  spriteX: 0,
-  spriteY: 610,
-  width: 224,
-  height: 112,
-  x: 0,
-  y: canvas.height - 112,
-  draw() {
-    context.drawImage(
-      sprites,
-      this.spriteX, this.spriteY,
-      this.width, this.height,
-      this.x, this.y,
-      this.width, this.height,
-    );
-    context.drawImage(
-      sprites,
-      this.spriteX, this.spriteY,
-      this.width, this.height,
-      (this.x + this.width), this.y,
-      this.width, this.height,
-    );
-  }
-};
-
 // [Tela inicio GetReady]
 const getReaydyMessage = {
   spriteX: 134,
@@ -82,6 +56,45 @@ const getReaydyMessage = {
 
 // [Pássaro]
 let flappyBird = flappyBirdFactory();
+// [Chão]
+let floor = floorFactory();
+
+let gameFrames = 0;
+
+function floorFactory() {
+  const _floor = {
+    spriteX: 0,
+    spriteY: 610,
+    width: 224,
+    height: 112,
+    x: 0,
+    y: canvas.height - 112,
+    update() {
+      const floorMove = 1;
+      const repeatIn = this.width / 2;
+      const move = this.x - floorMove;
+
+      this.x = move % repeatIn;
+    },
+    draw() {
+      context.drawImage(
+        sprites,
+        this.spriteX, this.spriteY,
+        this.width, this.height,
+        this.x, this.y,
+        this.width, this.height,
+      );
+      context.drawImage(
+        sprites,
+        this.spriteX, this.spriteY,
+        this.width, this.height,
+        (this.x + this.width), this.y,
+        this.width, this.height,
+      );
+    }
+  };
+  return _floor;
+}
 
 function flappyBirdFactory() {
   const _flappyBird = {
@@ -94,6 +107,12 @@ function flappyBirdFactory() {
     gravity: 0.25,
     speed: 0,
     jumpSize: 4.6,
+    currentFrame: 0,
+    moves: [
+      { spriteX: 0, spriteY: 0,  }, // Asa para cima
+      { spriteX: 0, spriteY: 26, }, // Asa no meio
+      { spriteX: 0, spriteY: 52, }, // Asa para baixo
+    ],
     jump() {
       this.y = this.y - 40;
       this.speed = - this.jumpSize;
@@ -108,13 +127,25 @@ function flappyBirdFactory() {
       this.y += this.speed;
     },
     draw() {
+      this.updateCurrentFrame();
+      const { spriteX, spriteY }= this.moves[this.currentFrame];
       context.drawImage(
         sprites,
-        this.spriteX, this.spriteY,
+        spriteX, spriteY,
         this.width, this.height,
         this.x, this.y,
         this.width, this.height,
       );
+    },
+    updateCurrentFrame() {
+      const frameInterval = 10;
+      const intervalReached = !(gameFrames % frameInterval);
+      if (intervalReached) {
+        const incrementBase = 1;
+        const increment = incrementBase + this.currentFrame;
+        const repetitionBase = this.moves.length;
+        this.currentFrame = increment % repetitionBase;
+      }
     }
   };
   return _flappyBird;
@@ -140,6 +171,7 @@ function changeToScreen(screen) {
 Screens.START = {
   init() {
     flappyBird = flappyBirdFactory();
+    floor = floorFactory();
   },
   draw() {
     background.draw();
@@ -147,7 +179,9 @@ Screens.START = {
     flappyBird.draw();
     getReaydyMessage.draw();
   },
-  update() {},
+  update() {
+    floor.update();
+  },
   click() {
     changeToScreen(Screens.GAME);
   },
@@ -176,7 +210,7 @@ function colides(bird, floor) {
 function loop() {
   activeScreen.draw();
   activeScreen.update();
-
+  gameFrames += 1;
   requestAnimationFrame(loop);
 }
 
